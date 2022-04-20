@@ -12,6 +12,6 @@ public class Main {
             }
             sb.append(curr);
         }
-        System.out.println(sb.toString());
+        System.out.println(sb);
     }
 }
