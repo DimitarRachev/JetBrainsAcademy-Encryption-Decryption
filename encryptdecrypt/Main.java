@@ -5,10 +5,11 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
 
-        Scanner scanner = new Scanner(System.in);
-        String command = scanner.nextLine();
-        String msg = scanner.nextLine();
-        int key = Integer.parseInt(scanner.nextLine());
+//        Scanner scanner = new Scanner(System.in);
+        String[] input = parceArguments(args);
+        String command = input[0];
+        int key = Integer.parseInt(input[1]);
+        String msg = input[2];
 
         switch (command) {
             case "enc":
@@ -18,6 +19,24 @@ public class Main {
                 printDecrypted(msg, key);
                 break;
         }
+    }
+
+    private static String[] parceArguments(String[] arr) {
+        String command = "enc";
+        String key = "0";
+        String data = "";
+        for (int i = 0; i < arr.length - 1; i += 2) {
+            if ("-mode".equals(arr[i])) {
+                command = arr[i + 1];
+            } else if ("-key".equals(arr[i])) {
+                key = arr[i + 1];
+            } else if ("-data".equals(arr[i])) {
+                data = arr[i + 1];
+            }
+        }
+
+
+        return new String[]{command, key, data};
     }
 
     private static void printDecrypted(String msg, int key) {
