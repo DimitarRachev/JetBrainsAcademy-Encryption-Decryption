@@ -10,7 +10,6 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
 
-//        Scanner scanner = new Scanner(System.in);
         String[] input;
         try {
             input = parcelArguments(args);
@@ -23,6 +22,7 @@ public class Main {
         String data = input[2];
         String in = input[3];
         String out = input[4];
+        String alg = input[5];
         List<String> msg = new ArrayList<>();
         if ("".equals(data)) {
             if (!"".equals(in)) {
@@ -39,13 +39,13 @@ public class Main {
         try {
             switch (command) {
                 case "enc":
-                    printEncrypted(msg, key, out);
+                    printEncrypted(msg, key, out, alg);
                     break;
                 case "dec":
-                    printDecrypted(msg, key, out);
+                    printDecrypted(msg, key, out, alg);
                     break;
             }
-        } catch ( IOException e) {
+        } catch (IOException e) {
             System.out.println("Error" + e.getMessage());
             return;
         }
@@ -62,6 +62,7 @@ public class Main {
         String data = "";
         String in = "";
         String out = "";
+        String alg = "shift";
         for (int i = 0; i < arr.length - 1; i += 2) {
             if ("-mode".equals(arr[i])) {
                 command = arr[i + 1];
@@ -73,34 +74,64 @@ public class Main {
                 in = arr[i + 1];
             } else if ("-out".equals(arr[i])) {
                 out = arr[i + 1];
+            } else if ("-alg".equals(arr[i])) {
+                alg = arr[i + 1];
             }
         }
 
 
-        return new String[]{command, key, data, in, out};
+        return new String[]{command, key, data, in, out, alg};
     }
 
-    private static void printDecrypted(List<String> list, int key, String out) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        for (String msg : list) {
-            for (int i = 0; i < msg.length(); i++) {
-                char curr = msg.charAt(i);
-                //those checks are no longer needed in this stage
-//            if (curr >= 97 && curr <= 122) {
-                curr = (char) (curr - key);
-//                while (curr < 97) {
-//                    curr = (char) (curr + 26);
-//                }
-//            }
-                sb.append(curr);
-            }
-            sb.append(System.lineSeparator());
+    private static void printDecrypted(List<String> list, int key, String out, String alg) throws IOException {
+        StringBuilder sb;
+        switch (alg) {
+            case "shift":
+                sb = decryptShift(list, key);
+                break;
+            case "unicode":
+                 sb = decryptUnicode(list, key);
+                break;
+            default:
+                sb = new StringBuilder();
+                break;
         }
         if ("".equals(out)) {
             System.out.print(sb);
         } else {
             writeToFile(sb.toString(), out);
         }
+    }
+
+    private static StringBuilder decryptUnicode(List<String> list, int key) {
+        StringBuilder sb = new StringBuilder();
+        for (String msg : list) {
+            for (int i = 0; i < msg.length(); i++) {
+                char curr = msg.charAt(i);
+                curr = (char) (curr - key);
+                sb.append(curr);
+            }
+            sb.append(System.lineSeparator());
+        }
+        return sb;
+    }
+
+    private static StringBuilder decryptShift(List<String> list, int key) {
+        StringBuilder sb = new StringBuilder();
+        for (String msg : list) {
+            for (int i = 0; i < msg.length(); i++) {
+                char curr = msg.charAt(i);
+            if (curr >= 97 && curr <= 122) {
+                curr = (char) (curr - key);
+                while (curr < 97) {
+                    curr = (char) (curr + 26);
+                }
+            }
+                sb.append(curr);
+            }
+            sb.append(System.lineSeparator());
+        }
+        return sb;
     }
 
     private static void writeToFile(String str, String out) throws IOException {
@@ -109,26 +140,55 @@ public class Main {
         writer.close();
     }
 
-    private static void printEncrypted(List<String> list, int key, String out) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        for (String msg : list) {
-            for (int i = 0; i < msg.length(); i++) {
-                char curr = msg.charAt(i);
-                //those checks are no longer needed in this stage
-                //            if (curr >= 97 && curr <= 122) {
-                curr = (char) (curr + key);
-//                while (curr > 122) {
-//                    curr = (char) (curr - 26);
-//                }
-//            }
-                sb.append(curr);
-            }
-            sb.append(System.lineSeparator());
+    private static void printEncrypted(List<String> list, int key, String out, String alg) throws IOException {
+        StringBuilder sb;
+        switch (alg) {
+            case "shift":
+                sb = encryptShift(list, key);
+
+                break;
+            case "unicode":
+                sb = encryptUnicode(list, key);
+                break;
+            default:
+                sb = new StringBuilder();
+                break;
         }
         if ("".equals(out)) {
             System.out.print(sb);
         } else {
             writeToFile(sb.toString(), out);
         }
+    }
+
+    private static StringBuilder encryptShift(List<String> list, int key) {
+        StringBuilder sb = new StringBuilder();
+        for (String msg : list) {
+            for (int i = 0; i < msg.length(); i++) {
+                char curr = msg.charAt(i);
+                            if (curr >= 97 && curr <= 122) {
+                curr = (char) (curr + key);
+                while (curr > 122) {
+                    curr = (char) (curr - 26);
+                }
+            }
+                sb.append(curr);
+            }
+            sb.append(System.lineSeparator());
+        }
+        return sb;
+    }
+
+    private static StringBuilder encryptUnicode(List<String> list, int key) {
+        StringBuilder sb = new StringBuilder();
+        for (String msg : list) {
+            for (int i = 0; i < msg.length(); i++) {
+                char curr = msg.charAt(i);
+                curr = (char) (curr + key);
+                sb.append(curr);
+            }
+            sb.append(System.lineSeparator());
+        }
+        return sb;
     }
 }
